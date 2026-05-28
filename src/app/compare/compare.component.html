@@ -1,0 +1,117 @@
+<section class="compare-page">
+  <header class="page-header">
+    <h1 class="page-title">⚖️ Compare Anime</h1>
+    <p class="page-subtitle">Select two anime to see them side by side</p>
+  </header>
+
+  <div class="slots-row">
+    @for (slotInfo of [{ slot: left, label: 'Left' }, { slot: right, label: 'Right' }]; track slotInfo.label) {
+      <div class="search-slot">
+        @if (slotInfo.slot.selected()) {
+          <div class="selected-card">
+            <img
+              [src]="slotInfo.slot.selected()!.imageUrl"
+              [alt]="slotInfo.slot.selected()!.title"
+              class="selected-poster"
+            />
+            <p class="selected-title">{{ slotInfo.slot.selected()!.title }}</p>
+            <button class="clear-btn" (click)="clearSlot(slotInfo.slot)">✕ Clear</button>
+          </div>
+        } @else {
+          <div class="slot-search">
+            <input
+              type="text"
+              class="search-input"
+              [placeholder]="'Search ' + slotInfo.label + ' anime…'"
+              [value]="slotInfo.slot.query()"
+              (input)="onInput(slotInfo.slot, $event)"
+            />
+            @if (slotInfo.slot.isSearching()) {
+              <p class="slot-hint">Searching…</p>
+            } @else if (slotInfo.slot.query() && slotInfo.slot.results().length === 0) {
+              <p class="slot-hint">No results found.</p>
+            } @else if (slotInfo.slot.results().length > 0) {
+              <ul class="results-list">
+                @for (anime of slotInfo.slot.results(); track anime.malId) {
+                  <li class="result-item" (click)="selectAnime(slotInfo.slot, anime)">
+                    <img
+                      [src]="anime.imageUrl"
+                      [alt]="anime.title"
+                      class="result-thumb"
+                    />
+                    <span class="result-title">{{ anime.title }}</span>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  @if (sameAnimeWarning()) {
+    <p class="warning-msg">⚠️ Please choose two different anime.</p>
+  }
+
+  @if (isComparing()) {
+    <div class="state-container">
+      <div class="spinner" aria-label="Loading comparison"></div>
+      <p class="state-text">Loading comparison…</p>
+    </div>
+  } @else if (compareError()) {
+    <div class="state-container error-state">
+      <span class="error-icon">⚠️</span>
+      <p class="state-text">{{ compareError() }}</p>
+    </div>
+  } @else if (comparison()) {
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th class="label-col"></th>
+          <th>{{ comparison()!.left.title }}</th>
+          <th>{{ comparison()!.right.title }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="row-label">Poster</td>
+          <td>
+            <img
+              [src]="comparison()!.left.imageUrl"
+              [alt]="comparison()!.left.title"
+              class="compare-poster"
+            />
+          </td>
+          <td>
+            <img
+              [src]="comparison()!.right.imageUrl"
+              [alt]="comparison()!.right.title"
+              class="compare-poster"
+            />
+          </td>
+        </tr>
+        <tr>
+          <td class="row-label">Score</td>
+          <td>{{ comparison()!.left.score != null ? (comparison()!.left.score | number:'1.1-2') : 'N/A' }}</td>
+          <td>{{ comparison()!.right.score != null ? (comparison()!.right.score | number:'1.1-2') : 'N/A' }}</td>
+        </tr>
+        <tr>
+          <td class="row-label">Episodes</td>
+          <td>{{ comparison()!.left.episodes ?? 'N/A' }}</td>
+          <td>{{ comparison()!.right.episodes ?? 'N/A' }}</td>
+        </tr>
+        <tr>
+          <td class="row-label">Type</td>
+          <td>{{ comparison()!.left.type ?? 'N/A' }}</td>
+          <td>{{ comparison()!.right.type ?? 'N/A' }}</td>
+        </tr>
+        <tr>
+          <td class="row-label">Genres</td>
+          <td>{{ comparison()!.left.genres?.join(', ') || 'N/A' }}</td>
+          <td>{{ comparison()!.right.genres?.join(', ') || 'N/A' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  }
+</section>
